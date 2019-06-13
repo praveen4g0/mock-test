@@ -1,0 +1,76 @@
+1.Write difference between pod and deployment.
+
+Pods:
+ 1. pods are the smallest basic unit  of kube that can be created in cluster 
+ 2. containers are encapsulated into single object called pod 
+ 3. pod has usually 1 to 1 relation with containers if container dies pod dies 
+ 3. pod can have multiple containers of different kinds (Example container of python-app and  logging container (Helper) if one dies another has to be killed as there is no use of logger container without application 
+ 4. containers inside pod share same network, same voulme , resources etc.,
+Deployments:
+ 1. Maintains a set of identical pods, ensuring that they have the correct config and that the right number of them exist  
+ 2. Runs a set of identical pods
+ 3. Monitors the state of each pod, updating as necessary
+ 4. Good for dev
+ 5. Good for production
+ 6. Deployments are a newer and higher level concept than Replication Controllers. They manage the deployment of Replica Sets (also a newer concept, but pretty much equivalent to Replication Controllers), and allow for easy updating of a Replica Set as well as the ability to roll back to a previous deployment.
+
+2. How buildconfig and s2i work (in short)
+
+  s2i creats builder-image , buildconfig uses builde-image to build and run/start the application source code 
+
+  buildconfig= s2i-image+(source code /Docker File)
+  
+  oc new-app --name hello \
+    httpd~http://services.lab.example.com/s2i-scripts 
+ 
+  or 
+  
+  oc new-app -i myis --strategy source --code http://gitserver.example.com/mygitrepo
+  
+  or 
+  
+  oc new-app -i myis --strategy source --code http://gitserver.example.com/mydockerfilerepo
+
+  s2i has build script for source code unde /usr/libexec/s2i/assemble
+   run/start applicatio scripts under /usr/libexec/s2i/run
+  
+
+  As sepecified buildconfig uses 2 strategies to build from source code or docker file.
+
+
+
+3. What is imagestream?
+
+image stream is a named pointer to container-image that is present in internal or external registry
+
+Image Stream Tag
+An image stream tag is a named pointer to an image in an image stream. It contains a history of images that the tag pointed to. Tracking history facilitates operations such as rolling back a deployment.
+
+Image Stream Mapping
+An image stream mapping stores detailed metadata, such as environment variables and entry point, from images stored in the OpenShift internal registry. 
+
+
+
+4. What is liveness probe, readiness probe. When would you use either
+
+Applications can become unhealthy due to issues such as temporary connectivity loss, configuration errors, or application errors. Developers can use probes to monitor their applications. A probe is an OpenShift action that periodically performs diagnostics on a running container. Probes can be configured using either the oc command-line client, defined as part of an OpenShift template, or by using the OpenShift web console. There are currently two types of probes in OpenShift:
+
+Readiness Probe:
+Readiness probes determine whether or not a container is ready to serve requests. If the readiness probe returns a failed state, OpenShift removes the container's IP address from the endpoints of all services. Developers can use readiness probes to signal to OpenShift that even though a container is running, it should not receive any traffic from a proxy. The readiness probe is configured in the spec.containers.readinessprobe attribute of a pod configuration.
+
+Liveness Probe:
+Liveness probes determine whether or not an application running in a container is in a healthy state. If the liveness probe detects an unhealthy state, OpenShift kills the pod and tries to redeploy it. The liveness probe is configured in the spec.containers.livenessprobe attribute of a pod configuration.
+
+OpenShift provides five timeout options that control these two probes:
+
+initialDelaySeconds: Mandatory. Determines how long to wait after the container starts before beginning the probe.
+
+timeoutSeconds: Mandatory. Determines how long to wait for the probe to finish. If this time is exceeded, OpenShift assumes that the probe failed. Default: 1.
+
+
+  
+ 
+use case in deployment stratigies to deploy a pod and access its service endpoint to route the traffic while untag service endpoint of old tag which doesnt satisfy Rediness or liveness probes
+
+
+ 
