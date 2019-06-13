@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-pod
+  labels:
+    purpose: env-pod
+spec:
+  containers:
+  - name: env-container
+    image: nginx
+    env:
+    - name: USER_NAME
+      value: ${ENV_USERNAME}
+    - name: PASSWORD
+      value: ${ENV_PASSWORD}
+

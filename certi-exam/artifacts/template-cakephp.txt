@@ -1,0 +1,64 @@
+
+6. Find template named cakephp-mysql-persistent and deploy it and export the yamls:
+
+
+setps:
+   1. oc get templates --all-namespaces
+ [root@localhost certi-exam]# oc get templates --all-namespaces
+NAMESPACE      NAME                       DESCRIPTION                                                                        PARAMETERS        OBJECTS
+multi-client   redis-ephemeral            Redis in-memory data structure store, without persistent storage. For more in...   5 (1 generated)   3
+openshift      cakephp-mysql-persistent   An example CakePHP application with a MySQL database. For more information ab...   20 (4 blank)      9
+
+
+   2. now export that template to local file 
+      oc export template cakephp-mysql-persistent -n openshift > my-template.yaml
+
+   3. my-template file will be created by using templates 
+
+   4. now deploy and app using template into project template test
+      oc login -u developer
+
+   5. oc new-project php-template
+
+   6. oc new-app --name myphp --file my-template.yaml -p PRAM1=vlaue1 -p PARAM2=value2
+
+           or 
+     oc process -f my-template.yaml -p PRAM1=value1 >myresources.yaml
+                     &&
+     oc create -f myresources.yaml
+      
+
+       or 
+
+    oc process -f my-template.yaml -p key=value/
+    oc create -f -
+    
+
+   7. once application is up and running 
+   
+   8. oc describe template cakephp-mysql-persistent -n openshift
+
+      will show up resources like parameters and objects that will be build as a part of app creation
+   
+   Objects:			 
+    Secret			${NAME}
+    Service			${NAME}
+    Route			${NAME}
+    ImageStream			${NAME}
+    BuildConfig			${NAME}
+    DeploymentConfig		${NAME}
+    PersistentVolumeClaim	${DATABASE_SERVICE_NAME}
+    Service			${DATABASE_SERVICE_NAME}
+    DeploymentConfig		${DATABASE_SERVICE_NAME}
+
+
+    9. now export our resources as a template locally 
+	oc export dc,bc,secret,service,route,is,pvc --as-template=mytemplate-php-from-resources.yaml
+
+
+
+
+
+
+
+

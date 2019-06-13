@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-parallel
+spec:
+  parallelism: 4
+  template:
+    metadata:
+      name: job-prallel
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        command: [ '/bin/sh' ]
+        args: ["-c","while true; do echo 'praveen'; sleep 10; done"]
+      restartPolicy: OnFailure
+

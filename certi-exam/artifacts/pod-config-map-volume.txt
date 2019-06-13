@@ -1,0 +1,99 @@
+3. Create a pod and configmap (of some file), use configmap as a volume (logic of your choice)
+
+in any name space create configmap by cli or resource yaml
+
+
+CLI 
+
+ oc login -u developer
+
+
+ oc project q2
+ (on project q2)
+
+
+ oc create configmap special-config --from-literal=special.how=Welcome --from-literal=special.type=' To Redhat'
+
+ configmap/special-config created
+
+
+
+ oc get cm -n q2
+
+
+
+	NAME             DATA      AGE
+	special-config   2         22h
+
+
+oc get cm/special-config -o yaml
+
+
+yaml resource 
+apiVersion: v1
+data:
+  special.how: Welcome
+  special.type: |2
+     to Redhat
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2019-06-12T11:42:48Z
+  name: special-config
+  namespace: q2
+  resourceVersion: "188800"
+  selfLink: /api/v1/namespaces/q1/configmaps/special-config
+  uid: 338fa5f6-8d07-11e9-ba24-52540028134f
+
+
+now create pod which reads config from configmap sepcial-config and volume will be  mounted on path /etc/config/
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dapi-test-pod
+spec:
+  containers:
+    - name: test-container
+      image: nginx
+      command: [ "cat", "/etc/config/special.how" ]
+      volumeMounts:
+      - name: config-volume
+        mountPath: /etc/config
+  volumes:
+    - name: config-volume
+      configMap:
+        name: special-config
+  restartPolicy: Never
+
+
+
+
+
+deploy pod by cli
+
+oc create -f pod-volume.yaml
+
+
+oc get pods
+NAME                               READY     STATUS             RESTARTS   AGE
+cakephp-mysql-persistent-1-build   0/1       Error              0          6h
+dapi-test-pod                      0/1       Completed          0          22h
+
+
+oc logs -f pod/dapi-test-pod
+
+Welcome
+
+
+
+
+
+
+  
+
+
+
+
+

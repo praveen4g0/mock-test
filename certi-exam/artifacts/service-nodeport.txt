@@ -1,0 +1,118 @@
+
+making use of nodeapp dc which was deployed earlier
+
+
+
+
+now exposing svc as nodeport insted of clusterip
+
+
+if we expose svc as nodeport that can be accessable directly outside the cluster from nodeport with ip address as minishift ip
+
+
+
+providing resource yaml file of service 
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nodeapp
+  name: nodeapp-1
+spec:
+  ports:
+    - port: 8080
+      nodePort: 30036
+      name: http
+  selector:
+    app: nodeapp
+    deploymentconfig: nodeapp
+  sessionAffinity: None
+  type: NodePort
+
+
+
+
+--
+
+ svc yaml file with type as cluster ip
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  creationTimestamp: '2019-06-12T11:30:09Z'
+  labels:
+    app: nodeapp
+  name: nodeapp
+  namespace: q1
+  resourceVersion: '185579'
+  selfLink: /api/v1/namespaces/q1/services/nodeapp
+  uid: 6f47ebd5-8d05-11e9-ba24-52540028134f
+spec:
+  clusterIP: 172.30.75.227
+  ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: nodeapp
+    deploymentconfig: nodeapp
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+
+
+
+difference between cluster and nodeport
+
+
+clusterip type can be accessable only inside cluster you can test service by doing ssh into minishift cluster and do curl http://localhost:8080/
+
+as you are inside cluster you can access the svc/pod on targetport(8080) which will point to  port (8080) application
+
+
+
+now with nodepport we are saying service to expose pod to outer world on port 30036(NodePort)  which will point to port(8080) of application
+
+
+oc project q2
+
+oc create -f ./path-to-NodePort-svc-yaml
+
+
+oc get svc
+
+[root@localhost artifacts]# oc get svc
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+nodeapp                    ClusterIP   172.30.75.227   <none>        8080/TCP         21h
+nodeapp-1                  NodePort    172.30.217.46   <none>        8080:30036/TCP   20h
+ 
+
+now access application which is exposed to outerworld on port 30036
+
+using minishift ip
+
+
+minishift ip
+
+[root@localhost artifacts]# minishift ip
+192.168.42.239
+
+
+
+now open firefox http://192.168.42.239:30036
+
+
+you can access nodeapp application without route 
+
+
+
+
+
+ 

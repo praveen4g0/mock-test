@@ -1,0 +1,92 @@
+In q2 namespace, create imagestream for nodejs and deploy https://github.com/sclorg/nodejs-ex
+
+
+ steps:
+  1. minishift should be preinstalled with oc client on local machine if you dont have oc client installed on local machine
+
+  2. Run eval $(minishift oc-env) will make use of oc of minishift in that particular session alone
+
+  3. Run minishift start
+
+  4. you should see The server is accessible via web console at:
+    https://192.168.42.239:8443/console
+
+  5. login as developer user
+  6. oc login -u developer -p pass https://192.168.42.239:8443
+
+  7. oc whoami (To Check user you have logged in)
+  8. create new project q2
+
+
+     1. oc new-project q2 \
+        --display-name="nodeapp" --description="Sample Node.js app"
+     2. oc get is --all-namespaces
+          or 
+        oc get is -n openshift
+     
+
+
+        you should see 
+	openshift      nginx                      172.30.1.1:5000/openshift/nginx               1.10,1.12,1.8 + 1 more...         12 days ago
+	openshift      nodejs                     172.30.1.1:5000/openshift/nodejs              8-RHOAR,latest,0.10 + 4 more...   12 days ago 
+    3. oc login -u system:admin
+    
+     add some permissions add cluster role to developer oc adm policy add-cluster-role-to-user cluster-admin developer
+     for prmission issues oc adm ploicy add-scc-to-group anyuid system:authenticated
+
+     external access to internal registry: (Out of scope)
+
+    3. oc login -u developer -p password 
+    4. oc project q2
+    5. now import image stream nodejs from namespace openshift to q2
+       oc import-image nodejs --confirm --from 172.30.1.1:5000/openshift/nodejs --insecure
+
+       now check imagesterams in q2 namespace
+       
+
+       [root@localhost certi-exam]# oc get is
+		NAME          DOCKER REPO                              TAGS      UPDATED
+		nodejs       172.30.1.1:5000/q2/nodejs                 latest    20 hours ago
+
+        
+  6. now deploy app making use of image stream we have imported to q2
+      oc new-app nodeapp -i q2/nodejs --code https://github.com/sclorg/nodejs-ex
+       
+         or 
+      oc new-app nodeapp q2/nodejs~https://github.com/sclorg/nodejs-ex
+
+    now check oc status 
+      
+
+  7. check oc status on resources status
+     check for is, bc, dc, pods, services(svc)
+
+  8. now expose svc as route (will create route to access the service outside of cluster)
+
+        1. oc expose svc/nodeapp
+
+          will create a default route (http://nodeapp-q1.192.168.42.239.nip.io )
+
+          http://<appname>-<namespace>.<minishift-ip>.npi.io
+
+          by this you can able to access svc ouside the cluster
+
+        2. oc expose svc/nodeapp --hostname nodeapp.lab.example.com
+
+           will create route but to access this particular route outside cluster DNS Resolution need to be done locally to forward the traffic to            respective svc
+
+           open terminal vi /etc/hosts
+           add <minishift-ip>  <hostname>
+                192.168.42.239  nodeapp.lab.example.com
+
+        3. now open firefox and provide hostname of your application which can be accesseable
+
+ 
+
+     
+
+    
+
+
+
+

@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-parallel
+spec:
+  parallelism: 4
+  template:
+    metadata:
+      name: job-prallel
+    spec:
+#      parallelism: 7
+      containers:
+      - name: nginx
+        image: nginx
+#      - name: nginx1
+#        image: busybox
+      restartPolicy: OnFailure

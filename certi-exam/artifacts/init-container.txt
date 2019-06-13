@@ -1,0 +1,184 @@
+
+
+
+5. Create a deployment which has init container, init container should create some file and which should be available in main pod. (logic of your choice)
+
+
+
+initcontainers:
+
+ A Pod can have multiple Containers running apps within it, but it can also have one or more Init Containers, which are run before the app Containers are started.
+
+Init Containers are exactly like regular Containers, except:
+
+They always run to completion.
+Each one must complete successfully before the next one is started.
+If an Init Container fails for a Pod, Kubernetes restarts the Pod repeatedly until the Init Container succeeds. However, if the Pod has a restartPolicy of Never, it is not restarted.
+
+
+have created a file named "MYFILE" in directory using init container  and access that file in another application container
+
+ 
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name:  myfile
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: myapp-container
+        image: nginx
+        command: [ "/bin/sh" ]
+        args: ["-c","ls -ltr /tmp"]
+        volumeMounts:
+        - name: workdir
+          mountPath: /tmp
+      initContainers:
+      - name: init-myfile
+        image: nginx
+        command: [ "/bin/sh" ]
+        args: ["-c","mkdir -p /work-dir/myfile"]
+        volumeMounts:
+        - name: workdir
+          mountPath: "/work-dir"
+      volumes:
+      - name: workdir
+        emptyDir: {}
+
+
+
+
+
+
+providing deployment resource yaml and volumes specific to pod as they share same resources and network using volume mounts to create a file and access that filke
+
+
+1. init container will be intiallized at runtime and waits for its completion after our main application container starts up
+
+
+we have mounted our created file MYFILE under volume mount /work-dir
+
+and in our app container I am overriding /work-dir with /tmp
+
+and access myfile from /tmp directory of app container
+
+
+ls -ltr /temp
+
+
+oc get deployment/myfile -o yaml
+
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: 2019-06-12T14:43:53Z
+  generation: 1
+  labels:
+    app: web
+  name: myfile
+  namespace: q1
+  resourceVersion: "320689"
+  selfLink: /apis/extensions/v1beta1/namespaces/q1/deployments/myfile
+  uid: 7fb7aa58-8d20-11e9-ba24-52540028134f
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+    spec:
+      containers:
+      - args:
+        - -c
+        - ls -ltr /tmp
+        command:
+        - /bin/sh
+        image: nginx
+        imagePullPolicy: Always
+        name: myapp-container
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: workdir
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - -c
+        - mkdir -p /work-dir/myfile
+        command:
+        - /bin/sh
+        image: nginx
+        imagePullPolicy: Always
+        name: init-myfile
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /work-dir
+          name: workdir
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: workdir
+status:
+  conditions:
+  - lastTransitionTime: 2019-06-12T14:43:53Z
+    lastUpdateTime: 2019-06-12T14:43:53Z
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: 2019-06-13T02:41:54Z
+    lastUpdateTime: 2019-06-13T02:41:54Z
+    message: ReplicaSet "myfile-6bd4c49dc6" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  replicas: 1
+  unavailableReplicas: 1
+  updatedReplicas: 1
+
+
+  2. Now get logs of app container logs 
+    
+    myfile-6bd4c49dc6-744q6            1/1       Completed   80         19h
+   
+
+    oc logs -f myfile-6bd4c49dc6-744q6
+   
+
+    total 0
+    drwxr-xr-x. 2 root root 6 Jun 12 14:44 myfile
+
+
+
+ 
+
+
+
+

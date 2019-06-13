@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name:  myfile
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: myapp-container
+        image: nginx
+        command: [ "/bin/sh" ]
+        args: ["-c","ls -ltr /tmp"]
+        volumeMounts:
+        - name: workdir
+          mountPath: /tmp
+      initContainers:
+      - name: init-myfile
+        image: nginx
+        command: [ "/bin/sh" ]
+        args: ["-c","mkdir -p /work-dir/myfile"]
+        volumeMounts:
+        - name: workdir
+          mountPath: "/work-dir"
+      volumes:
+      - name: workdir
+        emptyDir: {} 
+

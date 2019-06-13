@@ -1,0 +1,77 @@
+Write a job which can runs 4 pods in parallel (logic of your choice)
+
+
+Need to create A resource of kind job and spec.parallelism value as 4 to run 4 containers at the same time
+
+
+yaml file with basic logic of printing name at run time and sleep for 10 seconds
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-parallel
+spec:
+  parallelism: 4
+  template:
+    metadata:
+      name: job-prallel
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        command: [ '/bin/sh' ]
+        args: ["-c","while true; do echo 'praveen'; sleep 10; done"]
+      restartPolicy: OnFailure
+
+
+
+
+
+
+save this yaml file as parallel-job.yaml
+
+now under any project 
+
+1. oc create -f ./path-to/parallel-job.yaml
+
+
+   job.batch/job-parallel created
+
+
+2. oc get jobs
+   
+   [root@localhost artifacts]# oc get jobs
+	NAME           DESIRED   SUCCESSFUL   AGE
+	job-parallel   <none>    0            6m
+
+3. oc get pods
+   [root@localhost artifacts]# oc get pods
+	NAME                               READY     STATUS             RESTARTS   AGE
+	cakephp-mysql-persistent-1-build   0/1       Error              0          5h
+	dapi-test-pod                      0/1       Completed          0          20h
+	job-parallel-jlm47                 1/1       Running            0          6m
+	job-parallel-nzppd                 1/1       Running            0          6m
+	job-parallel-qbcn2                 1/1       Running            0          6m
+	job-parallel-zj8nz                 1/1       Running            0          6m
+
+4. now check logs of running pods
+
+    
+	1. oc logs -f job-parallel-jlm47
+ 
+     [root@localhost artifacts]# oc logs -f job-parallel-jlm47
+	praveen
+	praveen
+	praveen	
+	praveen
+       
+      2.  1. oc logs -f job-parallel-nzppd
+ 
+     [root@localhost artifacts]# oc logs -f job-parallel-nzppd
+        praveen
+        praveen
+        praveen
+        praveen
+
+ 
+

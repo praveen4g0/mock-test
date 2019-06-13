@@ -1,0 +1,60 @@
+
+I. Deploy https://github.com/sclorg/nodejs-ex on openshift in q1 namespace/project
+
+
+ steps: 
+  1. minishift should be preinstalled with oc client on local machine if you dont have oc client installed on local machine 
+  
+  2. Run eval $(minishift oc-env) will make use of oc of minishift in that particular session alone
+  
+  3. Run minishift start 
+
+  4. you should see The server is accessible via web console at:
+    https://192.168.42.239:8443/console
+  
+  5. login as developer user 
+  6. oc login -u developer -p pass https://192.168.42.239:8443
+
+  7. oc whoami (To Check user you have logged in)
+  8. create new project q1
+     
+
+     1. oc new-project q1 \
+    --display-name="q1" --description="Sample Node.js app"
+
+
+     2. oc project q1(to go to project q1 will be done by default no need to run this expecitly)
+
+
+     3. oc new-app --name nodeapp --strategy source --code https://github.com/sclorg/nodejs-ex 
+     
+            or 
+        oc new-app --strategy source --cdoe https://github.com/sclorg/nodejs-ex -l name=nodepp
+
+     4. check oc status on resources status 
+     check for is, bc, dc, pods, services(svc)
+    
+     5. now expose svc as route (will create route to access the service outside of cluster)
+
+        1. oc expose svc/nodeapp 
+
+          will create a default route (http://nodeapp-q1.192.168.42.239.nip.io )
+
+          http://<app_name>-<namespace>.<minishift-ip>.npi.io
+
+          by this you can able to access svc ouside the cluster 
+          
+        2. oc expose svc/nodeapp --hostname nodeapp.lab.example.com
+          
+           will create route but to access this particular route outside cluster DNS Resolution need to be done locally to forward the traffic to            respective svc
+  
+           open terminal vi /etc/hosts
+           add <minishift-ip>  <hostname>
+                192.168.42.239  nodeapp.lab.example.com
+
+        3. now open firefox and provide hostname of your application which can be accesseable
+
+
+
+
+
