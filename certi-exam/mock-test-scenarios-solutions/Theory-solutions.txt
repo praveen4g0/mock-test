@@ -16,7 +16,7 @@ Deployments:
 
 2. How buildconfig and s2i work (in short)
 
-  s2i creats builder-image , buildconfig uses builde-image to build and run/start the application source code 
+  s2i creats builder-image , buildconfig uses builder-image to build and run/start the application source code 
 
   buildconfig= s2i-image+(source code /Docker File)
   
@@ -29,7 +29,7 @@ Deployments:
   
   or 
   
-  oc new-app -i myis --strategy source --code http://gitserver.example.com/mydockerfilerepo
+  oc new-app -i myis --strategy source --docker-image http://gitserver.example.com/mydockerfilerepo
 
   s2i has build script for source code unde /usr/libexec/s2i/assemble
    run/start applicatio scripts under /usr/libexec/s2i/run
